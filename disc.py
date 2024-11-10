@@ -102,8 +102,16 @@ intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 intents.message_content = True
 
-@bot.command()
+@bot.event
+async def on_ready():
+    print(f'{bot.user} has connected to Discord!')
+    await bot.change_presence(activity=discord.Game(name="Type !help for commands"))
+
+@bot.command(name='optimize')
 async def optimize(ctx, *args):
+    """Calculate maximum possible fusions from given resources
+    Usage: !optimize <timber> <tender> <abidos>
+    Example: !optimize 1000 500 100"""
     try:
         # Check if we have exactly 3 arguments
         if len(args) != 3:
@@ -148,6 +156,53 @@ async def optimize(ctx, *args):
         
     except (ValueError, TypeError):
         await ctx.send("cant make any")
+
+@bot.command(name='rates')
+async def rates(ctx):
+    """Display all conversion rates and requirements"""
+    rates_info = """
+    **Conversion Rates:**
+    • 100 Timber → 80 Lumber Powder
+    • 50 Tender → 80 Lumber Powder
+    • 100 Lumber Powder → 10 Abidos
+
+    **Fusion Requirements:**
+    Each fusion needs:
+    • 86 Timber
+    • 45 Tender
+    • 33 Abidos
+    """
+    await ctx.send(rates_info)
+
+@bot.command(name='commands')
+async def commands(ctx):
+    """List all available commands"""
+    commands_list = """
+    **Available Commands:**
+    
+    `!optimize <timber> <tender> <abidos>`
+    • Calculates maximum possible fusions from your resources
+    • Example: `!optimize 1000 500 100`
+    
+    `!rates`
+    • Shows all conversion rates and fusion requirements
+    
+    `!commands`
+    • Shows this list of commands
+    
+    `!help`
+    • Shows detailed help for all commands
+    """
+    await ctx.send(commands_list)
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.errors.MissingRequiredArgument):
+        await ctx.send("cant make any")
+    elif isinstance(error, commands.errors.BadArgument):
+        await ctx.send("cant make any")
+    else:
+        await ctx.send("An error occurred. Please check your input and try again.")
 
 # Run the bot with your token
 bot.run(bot_token)
