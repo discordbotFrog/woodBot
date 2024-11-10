@@ -10,6 +10,7 @@ bot_token = os.getenv('DISCORD_TOKEN')
 # Constants for input validation
 MAX_RESOURCE_VALUE = 1_000_000  # Reasonable upper limit for resources
 MIN_RESOURCE_VALUE = 0
+MAX_INPUT_SIZE = 10_000_000  # Maximum allowable size for any input
 
 class ResourceValidationError(Exception):
     """Custom exception for resource validation errors"""
@@ -24,6 +25,8 @@ def validate_resources(*args):
             raise ResourceValidationError(f"Input '{value}' cannot be negative")
         if value > MAX_RESOURCE_VALUE:
             raise ResourceValidationError(f"Input '{value}' exceeds maximum allowed value of {MAX_RESOURCE_VALUE}")
+        if value > MAX_INPUT_SIZE:
+            raise ResourceValidationError(f"Input '{value}' exceeds the maximum allowable size of {MAX_INPUT_SIZE}")
 
 def calculate_max_fusions(timber, tender, abidos):
     try:
@@ -121,8 +124,14 @@ async def optimize(ctx, *args):
         except ValueError:
             raise ResourceValidationError("All inputs must be valid numbers")
 
-        # Run the calculation in a separate thread to avoid blocking the bot
-        result = await asyncio.to_thread(calculate_max_fusions, timber, tender, abidos)
+        # Run input validation
+        validate_resources(timber, tender, abidos)
+
+        # Use asyncio.wait_for to enforce a timeout on the calculation
+        result = await asyncio.wait_for(
+            asyncio.to_thread(calculate_max_fusions, timber, tender, abidos),
+            timeout=5  # Timeout after 5 seconds
+        )
 
         response = f"""
         **Resource Optimization Results:**
@@ -150,10 +159,12 @@ async def optimize(ctx, *args):
 
         await ctx.send(response)
 
+    except asyncio.TimeoutError:
+        await ctx.send("❌ The calculation took too long and timed out. Please try smaller numbers.")
     except ResourceValidationError as e:
-        await ctx.send(f" Error: {str(e)}")
+        await ctx.send(f"❌ Error: {str(e)}")
     except Exception as e:
-        await ctx.send(f" An unexpected error occurred: {str(e)}")
+        await ctx.send(f"❌ An unexpected error occurred: {str(e)}")
 
 # Run the bot with your token
 bot.run(bot_token)
