@@ -2,33 +2,34 @@ import os
 from discord.ext import commands
 import discord
 from dotenv import load_dotenv
+from decimal import Decimal, InvalidOperation  # Import Decimal for precise handling of inputs
+
 load_dotenv()
 
 bot_token = os.getenv('DISCORD_TOKEN')
 
 def calculate_max_fusions(timber, tender, abidos):
-    # Check for invalid inputs
-    if not all(isinstance(x, int) for x in [timber, tender, abidos]):
+    # Check for invalid inputs, including decimals
+    if not all(isinstance(x, int) or (isinstance(x, Decimal) and x % 1 == 0) for x in [timber, tender, abidos]):
         return "cant make any"
-    
-    # Check for negative values
-    if any(x < 0 for x in [timber, tender, abidos]):
-        return "cant make any"
+
+    # Convert Decimal inputs to integers
+    timber, tender, abidos = map(int, [timber, tender, abidos])
     
     # Constants for resource requirements
     TIMBER_PER_FUSION = 86
     TENDER_PER_FUSION = 45
     ABIDOS_PER_FUSION = 33
     
-    # Check if inputs meet minimum requirements
+    # Minimum requirements check
     if timber < TIMBER_PER_FUSION or tender < TENDER_PER_FUSION or abidos < ABIDOS_PER_FUSION:
         return "cant make any"
     
     # Constants for conversion rates
-    TIMBER_TO_LUMBER = 80  
-    TENDER_TO_LUMBER = 80  
-    LUMBER_TO_ABIDOS = 10  
-    
+    TIMBER_TO_LUMBER = 80
+    TENDER_TO_LUMBER = 80
+    LUMBER_TO_ABIDOS = 10
+
     try:
         best_result = {
             'max_fusions': 0,
@@ -39,9 +40,8 @@ def calculate_max_fusions(timber, tender, abidos):
             'remaining_abidos': abidos
         }
         
-        # Handle potential overflow with large numbers
-        max_timber_conversions = min(timber // 100, (2**31 - 1) // TIMBER_TO_LUMBER)
-        max_tender_conversions = min(tender // 50, (2**31 - 1) // TENDER_TO_LUMBER)
+        max_timber_conversions = timber // 100
+        max_tender_conversions = tender // 50
         
         for timber_conversions in range(max_timber_conversions + 1):
             remaining_timber = timber - (timber_conversions * 100)
@@ -51,17 +51,8 @@ def calculate_max_fusions(timber, tender, abidos):
                 remaining_tender = tender - (tender_conversions * 50)
                 lumber_from_tender = tender_conversions * TENDER_TO_LUMBER
                 
-                # Check for overflow in calculations
-                if lumber_from_timber + lumber_from_tender > 2**31 - 1:
-                    continue
-                
                 total_lumber = lumber_from_timber + lumber_from_tender
                 new_abidos = (total_lumber // 100) * LUMBER_TO_ABIDOS
-                
-                # Check for overflow in abidos calculation
-                if abidos + new_abidos > 2**31 - 1:
-                    continue
-                    
                 total_abidos = abidos + new_abidos
                 
                 possible_fusions_timber = remaining_timber // TIMBER_PER_FUSION
@@ -85,13 +76,7 @@ def calculate_max_fusions(timber, tender, abidos):
                         'lumber_powder_created': total_lumber,
                         'new_abidos_from_conversion': new_abidos
                     }
-                
-                if fusions == 0 and best_result['max_fusions'] > 0:
-                    break
-                    
-            if best_result['max_fusions'] > 0 and remaining_timber < TIMBER_PER_FUSION:
-                break
-        
+
         return best_result
         
     except (OverflowError, ValueError):
@@ -113,17 +98,26 @@ async def optimize(ctx, *args):
     Usage: !optimize <timber> <tender> <abidos>
     Example: !optimize 1000 500 100"""
     try:
-        # Check if we have exactly 3 arguments
         if len(args) != 3:
             await ctx.send("cant make any")
             return
+        
+        try:
+            # Attempt to convert to Decimal and check if they are valid integers
+            timber, tender, abidos = map(Decimal, args)
+            if any(x % 1 != 0 for x in [timber, tender, abidos]):
+                await ctx.send("cant make any")
+                return
             
-        # Try to convert arguments to integers
-        timber, tender, abidos = map(int, args)
+            # Convert to integers
+            timber, tender, abidos = map(int, [timber, tender, abidos])
+        
+        except (ValueError, InvalidOperation):
+            await ctx.send("cant make any")
+            return
         
         result = calculate_max_fusions(timber, tender, abidos)
         
-        # Check if result is the error message
         if isinstance(result, str):
             await ctx.send(result)
             return
@@ -157,52 +151,4 @@ async def optimize(ctx, *args):
     except (ValueError, TypeError):
         await ctx.send("cant make any")
 
-@bot.command(name='rates')
-async def rates(ctx):
-    """Display all conversion rates and requirements"""
-    rates_info = """
-    **Conversion Rates:**
-    • 100 Timber → 80 Lumber Powder
-    • 50 Tender → 80 Lumber Powder
-    • 100 Lumber Powder → 10 Abidos
-
-    **Fusion Requirements:**
-    Each fusion needs:
-    • 86 Timber
-    • 45 Tender
-    • 33 Abidos
-    """
-    await ctx.send(rates_info)
-
-@bot.command(name='commands')
-async def commands(ctx):
-    """List all available commands"""
-    commands_list = """
-    **Available Commands:**
-    
-    `!optimize <timber> <tender> <abidos>`
-    • Calculates maximum possible fusions from your resources
-    • Example: `!optimize 1000 500 100`
-    
-    `!rates`
-    • Shows all conversion rates and fusion requirements
-    
-    `!commands`
-    • Shows this list of commands
-    
-    `!help`
-    • Shows detailed help for all commands
-    """
-    await ctx.send(commands_list)
-
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.errors.MissingRequiredArgument):
-        await ctx.send("cant make any")
-    elif isinstance(error, commands.errors.BadArgument):
-        await ctx.send("cant make any")
-    else:
-        await ctx.send("An error occurred. Please check your input and try again.")
-
-# Run the bot with your token
 bot.run(bot_token)
