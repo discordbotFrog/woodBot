@@ -32,18 +32,36 @@ def calculate_max_fusions(timber: int, tender: int, abidos: int) -> dict:
 
 class AcreClient(discord.Client):
     def __init__(self):
+        # Set up required intents
         intents = discord.Intents.default()
+        intents.message_content = True
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
+        self.synced = False  # Track if commands have been synced
 
     async def setup_hook(self):
-        await self.tree.sync()
+        if not self.synced:  # Check if commands have been synced
+            await self.tree.sync()  # Sync commands to all guilds
+            self.synced = True
+
+    async def on_ready(self):
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        print('------')
+        if not self.synced:  # Sync commands if they haven't been synced yet
+            await self.tree.sync()
+            self.synced = True
+            print("Slash commands synced!")
 
 client = AcreClient()
 
 @client.tree.command(
     name="optimize",
     description="Calculate maximum possible fusions"
+)
+@app_commands.describe(
+    timber="Amount of timber",
+    tender="Amount of tender",
+    abidos="Amount of abidos"
 )
 async def optimize(
     interaction: discord.Interaction,
@@ -65,4 +83,6 @@ Abidos: {result['remaining_abidos']}"""
     except Exception as e:
         await interaction.response.send_message("cant make any")
 
+# Run the bot
+print("Starting bot...")
 client.run(bot_token)
