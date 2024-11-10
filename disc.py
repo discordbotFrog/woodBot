@@ -1,5 +1,8 @@
-import discord
+import os
 from discord.ext import commands
+import discord
+
+bot_token = os.getenv('DISCORD_TOKEN')
 
 # Resource optimization function
 def calculate_max_fusions(timber, tender, abidos):
@@ -101,4 +104,4 @@ async def optimize(ctx, timber: int, tender: int, abidos: int):
     await ctx.send(response)
 
 # Run the bot with your token
-bot.run("MTMwNTAyMTQ4Mjk4ODA4MTI1NQ.G_a5Fk.JdKc1CWgucYMS5COpdlGensRqDOIbnmKJk2X6k")
+bot.run(bot_token)
