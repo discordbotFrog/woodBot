@@ -103,7 +103,7 @@ async def optimize(ctx, *args):
         try:
             validate_resources(timber, tender, abidos)
         except ResourceValidationError as e:
-            await ctx.send(f"❌ Error: {str(e)}")
+            await ctx.send(f" Error: {str(e)}")
             return
 
         # Start timer to check for long calculations
@@ -149,12 +149,12 @@ async def optimize(ctx, *args):
             await ctx.send(response)
 
         except asyncio.TimeoutError:
-            await ctx.send("❌ The calculation took too long and timed out. Please try smaller numbers.")
+            await ctx.send(" The calculation took too long and timed out. Please try smaller numbers.")
         except Exception as e:
-            await ctx.send(f"❌ An unexpected error occurred: {str(e)}")
+            await ctx.send(f" An unexpected error occurred: {str(e)}")
 
     except Exception as e:
-        await ctx.send(f"❌ Error: {str(e)}")
+        await ctx.send(f"  Error: {str(e)}")
 
 # Run the bot with your token
 bot.run(bot_token)
