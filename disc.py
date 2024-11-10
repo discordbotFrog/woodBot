@@ -66,10 +66,10 @@ def calculate_max_fusions(timber, tender, abidos):
                     continue
 
                 total_lumber = lumber_from_timber + lumber_from_tender
+                
+                # Calculate new abidos from lumber and ensure it doesn't exceed max resources
                 new_abidos = (total_lumber // 100) * LUMBER_TO_ABIDOS
-
-                # Check for overflow in abidos calculation
-                if new_abidos > MAX_RESOURCE_VALUE - abidos:
+                if new_abidos + abidos > MAX_RESOURCE_VALUE:
                     continue
 
                 total_abidos = abidos + new_abidos
@@ -160,11 +160,11 @@ async def optimize(ctx, *args):
         await ctx.send(response)
 
     except asyncio.TimeoutError:
-        await ctx.send("❌ The calculation took too long and timed out. Please try smaller numbers.")
+        await ctx.send(" The calculation took too long and timed out. Please try smaller numbers.")
     except ResourceValidationError as e:
-        await ctx.send(f"❌ Error: {str(e)}")
+        await ctx.send(f" Error: {str(e)}")
     except Exception as e:
-        await ctx.send(f"❌ An unexpected error occurred: {str(e)}")
+        await ctx.send(f" An unexpected error occurred: {str(e)}")
 
 # Run the bot with your token
 bot.run(bot_token)
