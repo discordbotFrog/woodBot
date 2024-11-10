@@ -149,9 +149,9 @@ async def optimize(ctx, *args):
         await ctx.send(response)
 
     except ResourceValidationError as e:
-        await ctx.send(f"❌ Error: {str(e)}")
+        await ctx.send(f" Error: {str(e)}")
     except Exception as e:
-        await ctx.send(f"❌ An unexpected error occurred: {str(e)}")
+        await ctx.send(f" An unexpected error occurred: {str(e)}")
 
 # Run the bot with your token
 bot.run(bot_token)
