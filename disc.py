@@ -1,20 +1,17 @@
 import os
 from discord.ext import commands
 import discord
+from discord import app_commands
 from dotenv import load_dotenv
+
 load_dotenv()
 
 bot_token = os.getenv('DISCORD_TOKEN')
 
+MAX_RESOURCE_VALUE = 100000  # Maximum allowable value for resources
+MIN_RESOURCE_VALUE = 0
+
 def calculate_max_fusions(timber, tender, abidos):
-    # Check for invalid inputs
-    if not all(isinstance(x, int) for x in [timber, tender, abidos]):
-        return "invalid input, !optimize <timber> <tender> <abidos>"
-    
-    # Check for negative values
-    if any(x < 0 for x in [timber, tender, abidos]):
-        return "negative value cant be used"
-    
     # Constants for resource requirements
     TIMBER_PER_FUSION = 86
     TENDER_PER_FUSION = 45
@@ -22,12 +19,22 @@ def calculate_max_fusions(timber, tender, abidos):
     
     # Check if inputs meet minimum requirements
     if timber < TIMBER_PER_FUSION or tender < TENDER_PER_FUSION or abidos < ABIDOS_PER_FUSION:
-        return "minimum requirements not met"
-    
+        return "Minimum requirements not met"
+
     # Rest of the calculation function remains the same...
     # [Previous calculation code here]
 
-# Set up the bot
+def validate_resources(*args):
+    """Validate resource inputs"""
+    for value in args:
+        if not isinstance(value, int):
+            return "All inputs must be integers"
+        if value < MIN_RESOURCE_VALUE:
+            return "Negative values cannot be used"
+        if value > MAX_RESOURCE_VALUE:
+            return f"Input values must be less than {MAX_RESOURCE_VALUE}"
+
+# Set up the bot (removing command_prefix since we're using slash commands)
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 intents.message_content = True
@@ -35,64 +42,55 @@ intents.message_content = True
 @bot.event
 async def on_ready():
     print(f'{bot.user} has connected to Discord!')
-    await bot.change_presence(activity=discord.Game(name="Type !help for commands"))
+    await bot.change_presence(activity=discord.Game(name="Type /help for commands"))
 
-@bot.command(name='optimize')
-async def optimize(ctx, *, args=None):
-    """Calculate maximum possible fusions from given resources
-    Usage: !optimize <timber> <tender> <abidos>
-    Example: !optimize 1000 500 100"""
+# Slash command for /optimize
+@bot.tree.command(name="optimize", description="Calculate maximum possible fusions from given resources")
+async def optimize(interaction: discord.Interaction, timber: int, tender: int, abidos: int):
+    """Calculate maximum possible fusions from given resources"""
     
-    if args is None:
-        await ctx.send("input arguments with !optimize <timber> <tender> <abidos>")
+    # Validate resource inputs
+    validation_result = validate_resources(timber, tender, abidos)
+    if validation_result:
+        await interaction.response.send_message(validation_result)
         return
-        
-    try:
-        # Split the args and convert to integers
-        values = args.split()
-        if len(values) != 3:
-            await ctx.send("invalid input")
-            return
-            
-        timber, tender, abidos = map(int, values)
-        result = calculate_max_fusions(timber, tender, abidos)
-        
-        # Check if result is the error message
-        if isinstance(result, str):
-            await ctx.send(result)
-            return
-            
-        response = f"""
-        **Resource Optimization Results:**
-        Maximum possible fusions: {result['max_fusions']}
 
-        **Optimal conversion strategy:**
-        Convert {result['timber_to_convert']} timber to lumber powder
-        Convert {result['tender_to_convert']} tender to lumber powder
+    result = calculate_max_fusions(timber, tender, abidos)
 
-        **Conversion details:**
-        Lumber powder created: {result['lumber_powder_created']}
-        New abidos from conversion: {result['new_abidos_from_conversion']}
+    # Check if result is an error message
+    if isinstance(result, str):
+        await interaction.response.send_message(result)
+        return
 
-        **Remaining resources after ALL conversions and fusions:**
-        Timber: {result['remaining_timber']}
-        Tender: {result['remaining_tender']}
-        Abidos: {result['remaining_abidos']}
+    response = f"""
+    **Resource Optimization Results:**
+    Maximum possible fusions: {result['max_fusions']}
 
-        **Verification:**
-        Resources used in fusions:
-        Timber used: {result['max_fusions'] * 86}
-        Tender used: {result['max_fusions'] * 45}
-        Abidos used: {result['max_fusions'] * 33}
-        """
-        
-        await ctx.send(response)
-        
-    except (ValueError, TypeError):
-        await ctx.send("cant make any")
+    **Optimal conversion strategy:**
+    Convert {result['timber_to_convert']} timber to lumber powder
+    Convert {result['tender_to_convert']} tender to lumber powder
 
-@bot.command(name='rates')
-async def rates(ctx):
+    **Conversion details:**
+    Lumber powder created: {result['lumber_powder_created']}
+    New abidos from conversion: {result['new_abidos_from_conversion']}
+
+    **Remaining resources after ALL conversions and fusions:**
+    Timber: {result['remaining_timber']}
+    Tender: {result['remaining_tender']}
+    Abidos: {result['remaining_abidos']}
+
+    **Verification:**
+    Resources used in fusions:
+    Timber used: {result['max_fusions'] * 86}
+    Tender used: {result['max_fusions'] * 45}
+    Abidos used: {result['max_fusions'] * 33}
+    """
+    
+    await interaction.response.send_message(response)
+
+# Slash command for /rates
+@bot.tree.command(name="rates", description="Show all conversion rates and fusion requirements")
+async def rates(interaction: discord.Interaction):
     """Display all conversion rates and requirements"""
     rates_info = """
     **Conversion Rates:**
@@ -106,28 +104,29 @@ async def rates(ctx):
     • 45 Tender
     • 33 Abidos
     """
-    await ctx.send(rates_info)
+    await interaction.response.send_message(rates_info)
 
-@bot.command(name='commands')
-async def commands(ctx):
+# Slash command for /commands
+@bot.tree.command(name="commands", description="List all available commands")
+async def commands(interaction: discord.Interaction):
     """List all available commands"""
     commands_list = """
     **Available Commands:**
     
-    `!optimize <timber> <tender> <abidos>`
+    `/optimize <timber> <tender> <abidos>`
     • Calculates maximum possible fusions from your resources
-    • Example: `!optimize 1000 500 100`
+    • Example: `/optimize 1000 500 100`
     
-    `!rates`
+    `/rates`
     • Shows all conversion rates and fusion requirements
     
-    `!commands`
+    `/commands`
     • Shows this list of commands
     
-    `!help`
+    `/help`
     • Shows detailed help for all commands
     """
-    await ctx.send(commands_list)
+    await interaction.response.send_message(commands_list)
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -135,11 +134,11 @@ async def on_command_error(ctx, error):
                          commands.errors.BadArgument, 
                          commands.errors.MissingPermissions,
                          commands.errors.CommandInvokeError)):
-        await ctx.send("cant make any")
+        await ctx.send("An error occurred. Please try again.")
     else:
         # Log other errors but still give user-friendly message
         print(f"Error: {str(error)}")
-        await ctx.send("cant make any")
+        await ctx.send("An error occurred. Please try again.")
 
 # Run the bot with your token
 bot.run(bot_token)
