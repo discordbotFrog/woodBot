@@ -11,15 +11,15 @@ bot_token = os.getenv('DISCORD_TOKEN')
 def calculate_max_fusions(timber, tender, abidos):
     # Check for invalid inputs
     if not all(isinstance(x, int) for x in [timber, tender, abidos]):
-        return "Invalid input, please make sure to input all 3 values correctly."
+        return {"error": "Invalid input, please make sure to input all 3 values correctly."}
     
     # Check for negative values
     if any(x < 0 for x in [timber, tender, abidos]):
-        return "Negative values can't be used."
+        return {"error": "Negative values can't be used."}
 
     # Check if inputs are greater than 100,000
     if any(x > 100000 for x in [timber, tender, abidos]):
-        return "Input values can't be greater than 100,000."
+        return {"error": "Input values can't be greater than 100,000."}
 
     # Constants for resource requirements
     TIMBER_PER_FUSION = 86
@@ -28,18 +28,20 @@ def calculate_max_fusions(timber, tender, abidos):
     
     # Check if inputs meet minimum requirements
     if timber < TIMBER_PER_FUSION or tender < TENDER_PER_FUSION or abidos < ABIDOS_PER_FUSION:
-        return "Cannot make any fusions with the current resources."
+        return {"error": "Cannot make any fusions with the current resources."}
     
     # Calculate the max fusions
+    max_fusions = min(timber // TIMBER_PER_FUSION, tender // TENDER_PER_FUSION, abidos // ABIDOS_PER_FUSION)
+    
     result = {
-        "max_fusions": min(timber // TIMBER_PER_FUSION, tender // TENDER_PER_FUSION, abidos // ABIDOS_PER_FUSION),
+        "max_fusions": max_fusions,
         "timber_to_convert": timber % TIMBER_PER_FUSION,
         "tender_to_convert": tender % TENDER_PER_FUSION,
         "lumber_powder_created": 0,  # Placeholder for your calculation logic
         "new_abidos_from_conversion": 0,  # Placeholder
         "remaining_timber": timber % TIMBER_PER_FUSION,
         "remaining_tender": tender % TENDER_PER_FUSION,
-        "remaining_abidos": abidos - (result["max_fusions"] * ABIDOS_PER_FUSION),
+        "remaining_abidos": abidos - (max_fusions * ABIDOS_PER_FUSION),
     }
     return result
 
@@ -71,9 +73,9 @@ async def optimize(interaction: discord.Interaction, timber: int, tender: int, a
 
     result = calculate_max_fusions(timber, tender, abidos)
 
-    # Check if result is the error message
-    if isinstance(result, str):
-        await interaction.response.send_message(result)
+    # Check if result contains an error message
+    if "error" in result:
+        await interaction.response.send_message(result["error"])
         return
 
     response = f"""
