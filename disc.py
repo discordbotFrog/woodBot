@@ -10,9 +10,8 @@ load_dotenv()
 bot_token = os.getenv('DISCORD_TOKEN')
 
 # Constants for input validation
-MAX_RESOURCE_VALUE = 1_000_000  # Reasonable upper limit for resources
+MAX_RESOURCE_VALUE = 100000  # Maximum allowable value for resources
 MIN_RESOURCE_VALUE = 0
-MAX_INPUT_SIZE = 10_000_000  # Maximum allowable size for any input
 
 class ResourceValidationError(Exception):
     """Custom exception for resource validation errors"""
@@ -26,9 +25,7 @@ def validate_resources(*args):
         if value < MIN_RESOURCE_VALUE:
             raise ResourceValidationError(f"Input '{value}' cannot be negative")
         if value > MAX_RESOURCE_VALUE:
-            raise ResourceValidationError(f"Input '{value}' exceeds maximum allowed value of {MAX_RESOURCE_VALUE}")
-        if value > MAX_INPUT_SIZE:
-            raise ResourceValidationError(f"Input '{value}' exceeds the maximum allowable size of {MAX_INPUT_SIZE}")
+            raise ResourceValidationError(f"Input '{value}' exceeds the maximum allowed value of {MAX_RESOURCE_VALUE}")
 
 def calculate_max_fusions(timber, tender, abidos):
     TIMBER_PER_FUSION = 86
