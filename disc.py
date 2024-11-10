@@ -1,5 +1,6 @@
 import os
 from discord.ext import commands
+import asyncio
 import discord
 from dotenv import load_dotenv
 load_dotenv()
@@ -120,7 +121,8 @@ async def optimize(ctx, *args):
         except ValueError:
             raise ResourceValidationError("All inputs must be valid numbers")
 
-        result = calculate_max_fusions(timber, tender, abidos)
+        # Run the calculation in a separate thread to avoid blocking the bot
+        result = await asyncio.to_thread(calculate_max_fusions, timber, tender, abidos)
 
         response = f"""
         **Resource Optimization Results:**
