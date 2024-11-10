@@ -9,7 +9,7 @@ bot_token = os.getenv('DISCORD_TOKEN')
 def calculate_max_fusions(timber, tender, abidos):
     # Check for invalid inputs
     if not all(isinstance(x, int) for x in [timber, tender, abidos]):
-        return "invalid input, please make sure to input all 3 timbers"
+        return "invalid input, !optimize <timber> <tender> <abidos>"
     
     # Check for negative values
     if any(x < 0 for x in [timber, tender, abidos]):
@@ -22,7 +22,7 @@ def calculate_max_fusions(timber, tender, abidos):
     
     # Check if inputs meet minimum requirements
     if timber < TIMBER_PER_FUSION or tender < TENDER_PER_FUSION or abidos < ABIDOS_PER_FUSION:
-        return "cant make any"
+        return "minimum requirements not met"
     
     # Rest of the calculation function remains the same...
     # [Previous calculation code here]
@@ -44,14 +44,14 @@ async def optimize(ctx, *, args=None):
     Example: !optimize 1000 500 100"""
     
     if args is None:
-        await ctx.send("cant make any")
+        await ctx.send("input arguments with !optimize <timber> <tender> <abidos>")
         return
         
     try:
         # Split the args and convert to integers
         values = args.split()
         if len(values) != 3:
-            await ctx.send("cant make any")
+            await ctx.send("invalid input")
             return
             
         timber, tender, abidos = map(int, values)
