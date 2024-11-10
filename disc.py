@@ -61,6 +61,8 @@ async def on_ready():
 async def optimize(interaction: discord.Interaction, timber: int, tender: int, abidos: int):
     """Calculate maximum possible fusions from given resources"""
     
+    print(f"Received /optimize command with timber={timber}, tender={tender}, abidos={abidos}")
+
     # Validate resource inputs
     validation_result = validate_resources(timber, tender, abidos)
     if validation_result:
@@ -144,13 +146,12 @@ async def commands(interaction: discord.Interaction):
 # Error handling for slash commands
 @bot.event
 async def on_application_command_error(interaction: discord.Interaction, error: Exception):
+    print(f"Error occurred: {str(error)}")
     if isinstance(error, app_commands.MissingRequiredArgument):
         await interaction.response.send_message("Missing required argument. Please provide the necessary parameters.")
     elif isinstance(error, app_commands.CommandInvokeError):
         await interaction.response.send_message("An error occurred while processing your command.")
     else:
-        # Log other errors but still give user-friendly message
-        print(f"Error: {str(error)}")
         await interaction.response.send_message("An error occurred. Please try again.")
 
 # Function to validate the input values
