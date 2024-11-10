@@ -1,6 +1,6 @@
 import os
-from discord.ext import commands
 import discord
+from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 
@@ -21,8 +21,19 @@ def calculate_max_fusions(timber, tender, abidos):
     if timber < TIMBER_PER_FUSION or tender < TENDER_PER_FUSION or abidos < ABIDOS_PER_FUSION:
         return "Minimum requirements not met"
 
-    # Rest of the calculation function remains the same...
-    # [Previous calculation code here]
+    # Here, you would proceed with the calculation of fusions and return the result
+    # Assuming result is a dictionary with the necessary fields
+    result = {
+        "max_fusions": min(timber // TIMBER_PER_FUSION, tender // TENDER_PER_FUSION, abidos // ABIDOS_PER_FUSION),
+        "timber_to_convert": timber % TIMBER_PER_FUSION,
+        "tender_to_convert": tender % TENDER_PER_FUSION,
+        "lumber_powder_created": 0,  # Placeholder for your calculation logic
+        "new_abidos_from_conversion": 0,  # Placeholder
+        "remaining_timber": timber % TIMBER_PER_FUSION,
+        "remaining_tender": tender % TENDER_PER_FUSION,
+        "remaining_abidos": abidos - (result["max_fusions"] * ABIDOS_PER_FUSION),
+    }
+    return result
 
 def validate_resources(*args):
     """Validate resource inputs"""
@@ -34,18 +45,21 @@ def validate_resources(*args):
         if value > MAX_RESOURCE_VALUE:
             return f"Input values must be less than {MAX_RESOURCE_VALUE}"
 
-# Set up the bot (removing command_prefix since we're using slash commands)
+# Set up the bot
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
-intents.message_content = True
 
 @bot.event
 async def on_ready():
     print(f'{bot.user} has connected to Discord!')
     await bot.change_presence(activity=discord.Game(name="Type /help for commands"))
 
+    # Syncing slash commands
+    await bot.tree.sync()
+    print("Slash commands synced!")
+
 # Slash command for /optimize
-@bot.tree.command(name="optimize", description="Calculate maximum possible fusions from given resources")
+@bot.tree.command(name="optimize", description="Optimize resources for maximum fusions")
 async def optimize(interaction: discord.Interaction, timber: int, tender: int, abidos: int):
     """Calculate maximum possible fusions from given resources"""
     
