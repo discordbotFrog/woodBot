@@ -104,7 +104,7 @@ def calculate_max_fusions(timber, tender, abidos):
 
         return best_result
     except Exception as e:
-        raise ResourceValidationError(f"Error in calculation: {str(e)}")
+        raise ResourceValidationError(f"Error during calculation: {str(e)}")
 
 # Set up the bot
 intents = discord.Intents.default()
