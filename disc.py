@@ -119,7 +119,7 @@ async def optimize(ctx, *args):
             elapsed_time = time.time() - start_time
 
             if elapsed_time > 3:
-                await ctx.send("❌ The calculation took too long. Please try smaller numbers.")
+                await ctx.send(" The calculation took too long. Please try smaller numbers.")
                 return
 
             response = f"""
@@ -154,7 +154,7 @@ async def optimize(ctx, *args):
             await ctx.send(f" An unexpected error occurred: {str(e)}")
 
     except Exception as e:
-        await ctx.send(f"  Error: {str(e)}")
+        await ctx.send(f" Error: {str(e)}")
 
 # Run the bot with your token
 bot.run(bot_token)
