@@ -98,6 +98,7 @@ async def optimize(interaction: discord.Interaction, timber: int, tender: int, a
     Abidos used: {result['max_fusions'] * 33}
     """
     
+    # Ensure the response is sent asynchronously
     await interaction.response.send_message(response)
 
 # Slash command for /rates
