@@ -22,32 +22,11 @@ A Python-powered Discord bot designed to optimize in-game resource conversions f
 - Discord account and bot token  
 - Discord server to invite the bot  
 
-### **Installation**  
 
-1. **Clone the repository**:  
-   ```bash
-   git clone https://github.com/your-username/discord-resource-optimizer-bot.git
-   cd discord-resource-optimizer-bot
-   ```  
+## **How to Add the Bot to Your Server**  
 
-2. **Install dependencies**:  
-   ```bash
-   pip install -r requirements.txt
-   ```  
-
-3. **Set up the `.env` file**:  
-   Create a `.env` file in the project directory and add your Discord bot token:  
-   ```plaintext
-   DISCORD_TOKEN=your_bot_token_here
-   ```  
-
-4. **Run the bot**:  
-   ```bash
-   python bot.py
-   ```  
-
-5. **Invite the bot to your server**:  
-   Use your bot's OAuth2 URL from the Discord developer portal to invite it to a server.  
+Click the link below to invite the bot to your server:  
+[Invite the Bot](https://discord.com/oauth2/authorize?client_id=1305021482988081255&permissions=124928&integration_type=0&scope=bot)
 
 ---
 
@@ -70,15 +49,17 @@ The bot is hosted on Google Cloud to ensure 24/7 availability.
 
 ## **Usage**  
 
-Use the `!optimize` command to input your resource values:  
+1. After adding the bot to your server, click on the bot's profile to add the App to your own profile or the server.
+
+2. Use the `/optimize` command to input your resource values:  
 
 ```bash
-!optimize <timber> <tender> <abidos>
+/optimize <timber> <tender> <abidos>
 ```  
 
 ### **Example**:  
 ```bash
-!optimize 470 300 12694
+/optimize 470 300 12694
 ```  
 
 ### **Bot Response**:  
