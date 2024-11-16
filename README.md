@@ -8,7 +8,7 @@ A Python-powered Discord bot designed to optimize in-game resource conversions f
 ## **Features**  
 - **Dynamic Resource Optimization**: Calculates the maximum possible fusions based on the user's available resources.  
 - **Optimal Conversion Strategy**: Recommends how to convert timber and tender into additional abidos efficiently.  
-- **Interactive Discord Commands**: Users input their resources via the `!optimize` command and receive instant results.  
+- **Interactive Discord Commands**: Users input their resources via the `/optimize` command and receive instant results.  
 - **Detailed Reports**: Provides a comprehensive summary of the optimal strategy, resource usage, and remaining resources after conversions.  
 - **Secure Token Management**: Uses `.env` files to protect the bot's authentication token.  
 - **Cloud Hosting**: Deployed the bot on Google Cloud for 24/7 availability.  
